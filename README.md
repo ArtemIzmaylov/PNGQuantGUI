@@ -1,8 +1,9 @@
 # PNGQuant GUI
 
-Simple GUI for [PNGQuant](https://pngquant.org/) and [OptiPNG](https://optipng.sourceforge.net/) console applications. App was built using Delphi 11.2 and the [ACL](https://github.com/ArtemIzmaylov/ACL) components library.
+Simple GUI for [PNGQuant](https://pngquant.org/) and [OptiPNG](https://optipng.sourceforge.net/) console applications. 
+App was built using Delphi 11.2 and the [ACL](https://github.com/ArtemIzmaylov/ACL) components library.
 
-## Features
+## Key Features
 - Quick comparison original image with the compressed one
 - Differences map
 
