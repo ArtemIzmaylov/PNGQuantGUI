@@ -7,7 +7,13 @@ Simple GUI for [PNGQuant](https://pngquant.org/) and [OptiPNG](https://optipng.s
 - Differences map
 
 ## Screenshots
+
+General:
+
 ![General](/.screenshots/scr00.jpg)
+
+Differences Map:
+
 ![Differences Map](/.screenshots/scr01.jpg)
 
 ## History
