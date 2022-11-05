@@ -70,6 +70,10 @@
         <Manifest_File>$(BDS)\bin\default_app.manifest</Manifest_File>
         <Icon_MainIcon>PNGQuantGui.ico</Icon_MainIcon>
         <AppDPIAwarenessMode>none</AppDPIAwarenessMode>
+        <VerInfo_MinorVer>1</VerInfo_MinorVer>
+        <VerInfo_Build>8</VerInfo_Build>
+        <VerInfo_AutoIncVersion>true</VerInfo_AutoIncVersion>
+        <VerInfo_Keys>CompanyName=;FileDescription=$(MSBuildProjectName);FileVersion=1.1.0.8;InternalName=;LegalCopyright=;LegalTrademarks=;OriginalFilename=;ProgramID=com.embarcadero.$(MSBuildProjectName);ProductName=$(MSBuildProjectName);ProductVersion=1.0.0.0;Comments=</VerInfo_Keys>
     </PropertyGroup>
     <PropertyGroup Condition="'$(Base_Win64)'!=''">
         <DCC_UsePackage>dxPSdxSpreadSheetLnkRS28;vclwinx;fmx;vclie;DbxCommonDriver;bindengine;IndyIPCommon;VCLRESTComponents;FireDACCommonODBC;cxExportRS28;FireDACCommonDriver;dxHttpIndyRequestRS28;IndyProtocols;dxPSPrVwRibbonRS28;vclx;appanalytics;IndyIPClient;dbxcds;vcledge;cxLibraryRS28;dxCloudServiceLibraryRS28;bindcompvclwinx;dxGDIPlusRS28;bindcompfmx;dxCoreRS28;dxPSdxPDFViewerLnkRS28;inetdb;dxSpreadSheetCoreRS28;dxPSCoreRS28;FireDACSqliteDriver;DbxClientDriver;dxSpreadSheetRS28;dxTabbedMDIRS28;dxSkinsCoreRS28;soapmidas;dxBarRS28;vclactnband;dxADOServerModeRS28;fmxFireDAC;dbexpress;dxFireDACServerModeRS28;DBXMySQLDriver;VclSmp;inet;dxServerModeRS28;dxPSdxLCLnkRS28;fmxase;cxTreeListRS28;vcltouch;dxBarDBNavRS28;dbrtl;dxPSLnksRS28;fmxdae;dxPScxCommonRS28;FireDACMSAccDriver;CustomIPTransport;dxSpreadSheetReportDesignerRS28;vcldsnap;dxComnRS28;DBXInterBaseDriver;IndySystem;dxSpreadSheetConditionalFormattingDialogsRS28;vcldb;dxDBXServerModeRS28;dxRibbonRS28;dxmdsRS28;dxPsPrVwAdvRS28;dxPScxExtCommonRS28;vclFireDAC;bindcomp;FireDACCommon;dxRibbonCustomizationFormRS28;IndyCore;RESTBackendComponents;dxPScxGridLnkRS28;dxBarExtDBItemsRS28;bindcompdbx;cxTreeListdxBarPopupMenuRS28;rtl;FireDACMySQLDriver;dxDockingRS28;dxPDFViewerRS28;FireDACADSDriver;RESTComponents;DBXSqliteDriver;vcl;IndyIPServer;dsnapxml;dsnapcon;adortl;dxBarExtItemsRS28;dxSpreadSheetCoreConditionalFormattingDialogsRS28;dxSpellCheckerRS28;cxGridRS28;vclimg;FireDACPgDriver;FireDAC;inetdbxpress;xmlrtl;tethering;bindcompvcl;dsnap;CloudService;dxPScxTLLnkRS28;fmxobj;bindcompvclsmp;dxPScxPCProdRS28;soaprtl;soapserver;FireDACIBDriver;$(DCC_UsePackage)</DCC_UsePackage>
@@ -102,8 +106,8 @@
         <VerInfo_Locale>1033</VerInfo_Locale>
         <Icon_MainIcon>PNGQuantGui.ico</Icon_MainIcon>
         <VerInfo_AutoIncVersion>true</VerInfo_AutoIncVersion>
-        <VerInfo_Keys>CompanyName=;FileDescription=$(MSBuildProjectName);FileVersion=1.0.0.5;InternalName=;LegalCopyright=Artem Izmaylov;LegalTrademarks=;OriginalFilename=;ProgramID=com.embarcadero.$(MSBuildProjectName);ProductName=$(MSBuildProjectName);ProductVersion=1.0.0.0;Comments=</VerInfo_Keys>
-        <VerInfo_Build>5</VerInfo_Build>
+        <VerInfo_Keys>CompanyName=;FileDescription=$(MSBuildProjectName);FileVersion=1.0.0.6;InternalName=;LegalCopyright=Artem Izmaylov;LegalTrademarks=;OriginalFilename=;ProgramID=com.embarcadero.$(MSBuildProjectName);ProductName=$(MSBuildProjectName);ProductVersion=1.0.0.0;Comments=</VerInfo_Keys>
+        <VerInfo_Build>6</VerInfo_Build>
     </PropertyGroup>
     <ItemGroup>
         <DelphiCompile Include="$(MainSource)">

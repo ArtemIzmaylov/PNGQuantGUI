@@ -261,7 +261,7 @@ object frmMain: TfrmMain
       Align = alLeft
       Enabled = False
       AutoSize = True
-      Caption = 'v1.0 by Artem Izmaylov (artem@aimp.ru)'
+      Caption = 'v1.1 by Artem Izmaylov (artem@aimp.ru)'
     end
     object btnCancel: TACLButton
       AlignWithMargins = True
