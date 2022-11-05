@@ -22,13 +22,27 @@ object frmMain: TfrmMain
     Align = alClient
     TabOrder = 1
     Caption = 'Preview'
+    object lbPreviewZoom: TACLLabel
+      AlignWithMargins = True
+      Left = 10
+      Top = 471
+      Width = 454
+      Height = 19
+      Align = alBottom
+      Alignment = taRightJustify
+      SubControl.Control = sePreviewZoom
+      Caption = 'Zoom:'
+      ExplicitLeft = -13
+      ExplicitTop = 478
+    end
     object sbPreview: TACLScrollBox
       Left = 7
       Top = 16
       Width = 460
-      Height = 477
+      Height = 452
       Align = alClient
       TabOrder = 0
+      OnMouseWheel = sbPreviewMouseWheel
       Borders = []
       object pbPreview: TPaintBox
         Tag = 1
@@ -40,6 +54,23 @@ object frmMain: TfrmMain
         OnMouseUp = btnSwitchViewMouseUp
         OnPaint = pbPreviewPaint
       end
+    end
+    object sePreviewZoom: TACLSpinEdit
+      Left = 379
+      Top = 472
+      Width = 85
+      Height = 17
+      Align = alCustom
+      TabOrder = 1
+      OnChange = sePreviewZoomChange
+      OptionsValue.DisplayFormat = '%s%%'
+      OptionsValue.IncCount = 10
+      OptionsValue.MaxValue = 500
+      OptionsValue.MinValue = 100
+      Value = 100
+      DesignSize = (
+        85
+        17)
     end
   end
   object gbSettings: TACLGroupBox

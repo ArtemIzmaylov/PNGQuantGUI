@@ -37,6 +37,7 @@ uses
   ACL.UI.Application,
   ACL.UI.Controls.ActivityIndicator,
   ACL.UI.Controls.BaseControls,
+  ACL.UI.Controls.BaseEditors,
   ACL.UI.Controls.Bevel,
   ACL.UI.Controls.Buttons,
   ACL.UI.Controls.CompoundControl,
@@ -46,6 +47,7 @@ uses
   ACL.UI.Controls.Panel,
   ACL.UI.Controls.ScrollBox,
   ACL.UI.Controls.Slider,
+  ACL.UI.Controls.SpinEdit,
   ACL.UI.Forms,
   ACL.UI.ImageList,
   ACL.Utils.Common,
@@ -78,12 +80,14 @@ type
     lbMinQuality: TACLLabel;
     lbOptimization: TACLLabel;
     lbResultInfo: TACLFormattedLabel;
+    lbPreviewZoom: TACLLabel;
     optChangeDelayTimer: TACLTimer;
     optMaxValue: TACLSlider;
     optMinValue: TACLSlider;
     optOptimization: TACLSlider;
     pbPreview: TPaintBox;
     sbPreview: TACLScrollBox;
+    sePreviewZoom: TACLSpinEdit;
 
     procedure actSaveExecute(Sender: TObject);
     procedure actSaveUpdate(Sender: TObject);
@@ -93,6 +97,9 @@ type
     procedure optChangeDelayTimerHandler(Sender: TObject);
     procedure optQualityChanged(Sender: TObject);
     procedure pbPreviewPaint(Sender: TObject);
+    procedure sbPreviewMouseWheel(Sender: TObject; Shift: TShiftState;
+      WheelDelta: Integer; MousePos: TPoint; var Handled: Boolean);
+    procedure sePreviewZoomChange(Sender: TObject);
   public const
     AppCaption = 'PNGQuant GUI';
   strict private
@@ -250,7 +257,8 @@ begin
       'General', 'MinQuality', Trunc(optMinValue.OptionsValue.Default));
     optOptimization.PositionAsInteger := AConfig.ReadInteger(
       'General', 'Optimization', Trunc(optOptimization.OptionsValue.Default));
-    LoadPosition(AConfig)
+    sePreviewZoom.Value := AConfig.ReadInteger('General', 'PreviewZoom', 100);
+    LoadPosition(AConfig);
   finally
     AConfig.Free;
   end;
@@ -265,6 +273,7 @@ begin
     AConfig.WriteInteger('General', 'MaxQuality', optMaxValue.PositionAsInteger);
     AConfig.WriteInteger('General', 'MinQuality', optMinValue.PositionAsInteger);
     AConfig.WriteInteger('General', 'Optimization', optOptimization.PositionAsInteger);
+    AConfig.WriteInteger('General', 'PreviewZoom', sePreviewZoom.Value);
     SavePosition(AConfig);
   finally
     AConfig.Free;
@@ -345,10 +354,13 @@ begin
 end;
 
 procedure TfrmMain.UpdatePreview;
+var
+  AZoomFactor: Integer;
 begin
+  AZoomFactor := sePreviewZoom.Value;
   pbPreview.SetBounds(pbPreview.Left, pbPreview.Top,
-    {ScaleFactor.Apply}(ImageOriginal.Width),
-    {ScaleFactor.Apply}(ImageOriginal.Height));
+    MulDiv(ImageOriginal.Width, AZoomFactor, 100),
+    MulDiv(ImageOriginal.Height, AZoomFactor, 100));
   pbPreview.Invalidate;
 end;
 
@@ -402,7 +414,15 @@ end;
 
 procedure TfrmMain.pbPreviewPaint(Sender: TObject);
 begin
-  GetImage(FViewMode).DrawBlend(pbPreview.Canvas.Handle, pbPreview.ClientRect);
+  GetImage(FViewMode).DrawBlend(pbPreview.Canvas.Handle, pbPreview.ClientRect, MaxByte, True);
+end;
+
+procedure TfrmMain.sbPreviewMouseWheel(Sender: TObject;
+  Shift: TShiftState; WheelDelta: Integer; MousePos: TPoint; var Handled: Boolean);
+begin
+  Handled := ssCtrl in Shift;
+  if Handled then
+    sePreviewZoom.Value := sePreviewZoom.Value + (WheelDelta div WHEEL_DELTA) * sePreviewZoom.OptionsValue.IncCount;
 end;
 
 procedure TfrmMain.optChangeDelayTimerHandler(Sender: TObject);
@@ -415,6 +435,11 @@ end;
 procedure TfrmMain.optQualityChanged(Sender: TObject);
 begin
   optChangeDelayTimer.Restart;
+end;
+
+procedure TfrmMain.sePreviewZoomChange(Sender: TObject);
+begin
+  UpdatePreview;
 end;
 
 end.
