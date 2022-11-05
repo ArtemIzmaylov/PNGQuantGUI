@@ -347,8 +347,8 @@ end;
 procedure TfrmMain.UpdatePreview;
 begin
   pbPreview.SetBounds(pbPreview.Left, pbPreview.Top,
-    ScaleFactor.Apply(ImageOriginal.Width),
-    ScaleFactor.Apply(ImageOriginal.Height));
+    {ScaleFactor.Apply}(ImageOriginal.Width),
+    {ScaleFactor.Apply}(ImageOriginal.Height));
   pbPreview.Invalidate;
 end;
 
