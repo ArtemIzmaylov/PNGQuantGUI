@@ -22,8 +22,6 @@ object frmMain: TfrmMain
     Align = alClient
     TabOrder = 1
     Caption = 'Preview'
-    ExplicitWidth = 914
-    ExplicitHeight = 755
     object sbPreview: TACLScrollBox
       Left = 7
       Top = 16
@@ -32,8 +30,6 @@ object frmMain: TfrmMain
       Align = alClient
       TabOrder = 0
       Borders = []
-      ExplicitWidth = 900
-      ExplicitHeight = 732
       object pbPreview: TPaintBox
         Tag = 1
         Left = 0
@@ -59,7 +55,6 @@ object frmMain: TfrmMain
     Padding.Left = 8
     Padding.Right = 8
     Padding.Top = 12
-    ExplicitHeight = 755
     object lbMinQuality: TACLLabel
       AlignWithMargins = True
       Left = 13
@@ -180,7 +175,6 @@ object frmMain: TfrmMain
       Caption = 'Hold the button to see original image'
       ImageIndex = 0
       Images = ilImages
-      ExplicitTop = 686
     end
     object btnViewDifferences: TACLButton
       Tag = 2
@@ -196,7 +190,6 @@ object frmMain: TfrmMain
       Caption = 'Hold the button to see differences map'
       ImageIndex = 1
       Images = ilImages
-      ExplicitTop = 717
     end
     object optOptimization: TACLSlider
       AlignWithMargins = True
@@ -228,8 +221,6 @@ object frmMain: TfrmMain
     Align = alBottom
     TabOrder = 2
     Borders = []
-    ExplicitTop = 761
-    ExplicitWidth = 1206
     object lbAbout: TACLLabel
       AlignWithMargins = True
       Left = 3
@@ -252,7 +243,6 @@ object frmMain: TfrmMain
       OnClick = btnCancelClick
       Caption = 'Cancel'
       ModalResult = 2
-      ExplicitLeft = 1083
     end
     object btnOK: TACLButton
       AlignWithMargins = True
@@ -267,7 +257,6 @@ object frmMain: TfrmMain
       ImageIndex = 2
       Images = ilImages
       ModalResult = 1
-      ExplicitLeft = 957
     end
   end
   object optChangeDelayTimer: TACLTimer
