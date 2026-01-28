@@ -25,23 +25,23 @@ uses
   System.Variants,
   // ACL
   ACL.Classes,
-  ACL.Classes.Timer,
   ACL.FastCode,
   ACL.FileFormats.INI,
   ACL.Geometry,
+  ACL.Graphics,
   ACL.Graphics.Ex,
   ACL.Graphics.Ex.Gdip,
   ACL.Graphics.Images,
   ACL.Threading,
   ACL.Threading.Pool,
+  ACL.Timers,
   ACL.UI.Application,
   ACL.UI.Controls.ActivityIndicator,
-  ACL.UI.Controls.BaseControls,
+  ACL.UI.Controls.Base,
   ACL.UI.Controls.BaseEditors,
   ACL.UI.Controls.Bevel,
   ACL.UI.Controls.Buttons,
   ACL.UI.Controls.CompoundControl,
-  ACL.UI.Controls.FormattedLabel,
   ACL.UI.Controls.GroupBox,
   ACL.UI.Controls.Labels,
   ACL.UI.Controls.Panel,
@@ -97,14 +97,13 @@ type
     procedure optChangeDelayTimerHandler(Sender: TObject);
     procedure optQualityChanged(Sender: TObject);
     procedure pbPreviewPaint(Sender: TObject);
-    procedure sbPreviewMouseWheel(Sender: TObject; Shift: TShiftState;
-      WheelDelta: Integer; MousePos: TPoint; var Handled: Boolean);
+    procedure sbPreviewMouseWheel(Sender: TObject; Shift: TShiftState; WheelDelta: Integer; MousePos: TPoint; var Handled: Boolean);
     procedure sePreviewZoomChange(Sender: TObject);
   public const
     AppCaption = 'PNGQuant GUI';
   strict private
     FBackgroundTask: THandle;
-    FImages: array [0..2] of TACLBitmapLayer;
+    FImages: array [0..2] of TACLDib;
     FMaxDifference: Integer;
     FOptimizedImageSize: Int64;
     FOriginalImageSize: Int64;
@@ -112,21 +111,22 @@ type
     FTempFileName: string;
     FViewMode: Integer;
 
-    function GetImage(const Index: Integer): TACLBitmapLayer;
+    function GetImage(const Index: Integer): TACLDib;
   protected
+    function GetToolsPath: string; virtual;
     procedure ConfigLoad;
     procedure ConfigSave;
     procedure OnOptimized;
     procedure OptimizeImage;
-    procedure ScaleFactorChanged; override;
+    procedure DpiChanged; override;
     procedure SetViewMode(AValue: Integer);
     procedure UpdatePreview;
     procedure UpdateState;
     procedure UpdateStatistics;
 
-    property ImageDifferences: TACLBitmapLayer index 2 read GetImage;
-    property ImageOptimized: TACLBitmapLayer index 0 read GetImage;
-    property ImageOriginal: TACLBitmapLayer index 1 read GetImage;
+    property ImageDifferences: TACLDib index 2 read GetImage;
+    property ImageOptimized: TACLDib index 0 read GetImage;
+    property ImageOriginal: TACLDib index 1 read GetImage;
   public
     constructor Create(AOwner: TComponent); override;
     destructor Destroy; override;
@@ -145,24 +145,25 @@ begin
   Result := TACLIniFile.Create(acChangeFileExt(acSelfExeName, '.ini'));
 end;
 
-procedure ImportPngImage(ALayer: TACLBitmapLayer; const AFileName: string);
+procedure ImportPngImage(ALayer: TACLDib; const AFileName: string);
 begin
   with TACLImage.Create(AFileName) do
   try
-    ALayer.Resize(Width, Height);
-    ALayer.Reset;
-    Draw(ALayer.Handle, ALayer.ClientRect);
+    SaveToDib(ALayer);
+//    ALayer.Resize(Width, Height);
+//    ALayer.Reset;
+//    Draw(ALayer.Canvas, ALayer.ClientRect);
   finally
     Free;
   end;
 end;
 
-function BuildImageDifferenceMap(AOptimized, AOriginal, ADifference: TACLBitmapLayer): Byte;
+function BuildImageDifferenceMap(AOptimized, AOriginal, ADifference: TACLDib): Byte;
 var
-  AColor: PRGBQuad;
-  AColor1: PRGBQuad;
-  AColor2: PRGBQuad;
-  AColorCount: Integer;
+  LColor: PACLPixel32;
+  LColor1: PACLPixel32;
+  LColor2: PACLPixel32;
+  LColorCount: Integer;
 begin
   Result := 0;
   if AOriginal.Empty then
@@ -171,42 +172,42 @@ begin
   if (AOptimized.Width <> AOriginal.Width) or (AOptimized.Height <> AOriginal.Height) then
   begin
     ADifference.Resize(AOriginal.Width, AOriginal.Height);
-    GpFillRect(ADifference.Handle, ADifference.ClientRect, TAlphaColors.Red);
+    acFillRect(ADifference.Canvas, ADifference.ClientRect, TAlphaColors.Red);
     Exit(MaxByte);
   end;
 
   ADifference.Assign(AOriginal);
 
   // Make it lighten
-  AColorCount := ADifference.ColorCount;
-  AColor := @ADifference.Colors^[0];
-  while AColorCount > 0 do
+  LColorCount := ADifference.ColorCount;
+  LColor := ADifference.Colors;
+  while LColorCount > 0 do
   begin
-    AColor^.rgbRed   := 255 - (255 - AColor^.rgbRed)   div 4;
-    AColor^.rgbGreen := 255 - (255 - AColor^.rgbGreen) div 4;
-    AColor^.rgbBlue  := 255 - (255 - AColor^.rgbBlue)  div 4;
-    Dec(AColorCount);
-    Inc(AColor);
+    LColor^.R := 255 - (255 - LColor^.R) div 4;
+    LColor^.G := 255 - (255 - LColor^.G) div 4;
+    LColor^.B := 255 - (255 - LColor^.B) div 4;
+    Dec(LColorCount);
+    Inc(LColor);
   end;
 
   // highligth the differences
-  AColorCount := AOriginal.ColorCount;
-  AColor  := @ADifference.Colors^[0];
-  AColor2 := @AOptimized.Colors^[0];
-  AColor1 := @AOriginal.Colors^[0];
-  while AColorCount > 0 do
+  LColorCount := AOriginal.ColorCount;
+  LColor  := ADifference.Colors;
+  LColor2 := AOptimized.Colors;
+  LColor1 := AOriginal.Colors;
+  while LColorCount > 0 do
   begin
-    if DWORD(AColor1^) <> DWORD(AColor2^) then // just a fast check
+    if DWORD(LColor1^) <> DWORD(LColor2^) then // just a fast check
     begin
-      Result := Max(Result, FastAbs(AColor1^.rgbBlue - AColor2^.rgbBlue));
-      Result := Max(Result, FastAbs(AColor1^.rgbRed - AColor2^.rgbRed));
-      Result := Max(Result, FastAbs(AColor1^.rgbGreen - AColor2^.rgbGreen));
-      DWORD(AColor^) := $FFFF0000;
+      Result := Max(Result, FastAbs(LColor1^.B - LColor2^.B));
+      Result := Max(Result, FastAbs(LColor1^.R - LColor2^.R));
+      Result := Max(Result, FastAbs(LColor1^.G - LColor2^.G));
+      DWORD(LColor^) := $FFFF0000;
     end;
-    Dec(AColorCount);
-    Inc(AColor1);
-    Inc(AColor2);
-    Inc(AColor);
+    Dec(LColorCount);
+    Inc(LColor1);
+    Inc(LColor2);
+    Inc(LColor);
   end;
 end;
 
@@ -215,7 +216,7 @@ end;
 constructor TfrmMain.Create(AOwner: TComponent);
 begin
   for var I := Low(FImages) to High(FImages) do
-    FImages[I] := TACLBitmapLayer.Create;
+    FImages[I] := TACLDib.Create;
   inherited;
   FTempFileName := acTempFileName('PNGQuantGUI');
   ConfigLoad;
@@ -230,19 +231,6 @@ begin
     FreeAndNil(FImages[I]);
   acDeleteFile(FTempFileName);
   inherited;
-end;
-
-procedure TfrmMain.Initialize(const AFileName: string);
-begin
-  ImportPngImage(ImageOriginal, AFileName);
-  ImageOptimized.Assign(ImageOriginal);
-  Caption := AppCaption + ' - [' + AFileName + ']';
-  FOriginalImageSize := acFileSize(AFileName);
-  FOptimizedImageSize := 0;
-  FSourceFileName := AFileName;
-  FMaxDifference := 0;
-  UpdateStatistics;
-  UpdatePreview;
 end;
 
 procedure TfrmMain.ConfigLoad;
@@ -280,6 +268,19 @@ begin
   end;
 end;
 
+procedure TfrmMain.Initialize(const AFileName: string);
+begin
+  ImportPngImage(ImageOriginal, AFileName);
+  ImageOptimized.Assign(ImageOriginal);
+  Caption := AppCaption + ' - [' + AFileName + ']';
+  FOriginalImageSize := acFileSize(AFileName);
+  FOptimizedImageSize := 0;
+  FSourceFileName := AFileName;
+  FMaxDifference := 0;
+  UpdateStatistics;
+  UpdatePreview;
+end;
+
 procedure TfrmMain.OnOptimized;
 begin
   UpdateStatistics;
@@ -305,8 +306,8 @@ begin
     begin
       try
         acCopyFile(FSourceFileName, FTempFileName, False);
-        TProcessHelper.Execute(Format(PngQuantCmdLine, [acSelfPath, AMinQuality, AMaxQuality, FTempFileName]), [eoWaitForTerminate]);
-        TProcessHelper.Execute(Format(OptiPngCmdLine, [acSelfPath, AOptimization, FTempFileName]), [eoWaitForTerminate]);
+        TACLProcess.Execute(Format(PngQuantCmdLine, [GetToolsPath, AMinQuality, AMaxQuality, FTempFileName]), [eoWaitForTerminate]);
+        TACLProcess.Execute(Format(OptiPngCmdLine, [GetToolsPath, AOptimization, FTempFileName]), [eoWaitForTerminate]);
         ImportPngImage(ImageOptimized, FTempFileName);
         FMaxDifference := BuildImageDifferenceMap(ImageOptimized, ImageOriginal, ImageDifferences);
         FOptimizedImageSize := acFileSize(FTempFileName);
@@ -317,7 +318,7 @@ begin
     OnOptimized, tmcmSync);
 end;
 
-procedure TfrmMain.ScaleFactorChanged;
+procedure TfrmMain.DpiChanged;
 begin
   inherited;
   UpdatePreview;
@@ -373,9 +374,14 @@ begin
   btnViewOriginal.Enabled := FBackgroundTask = 0;
 end;
 
-function TfrmMain.GetImage(const Index: Integer): TACLBitmapLayer;
+function TfrmMain.GetImage(const Index: Integer): TACLDib;
 begin
   Result := FImages[Index];
+end;
+
+function TfrmMain.GetToolsPath: string;
+begin
+  Result := acSelfPath;
 end;
 
 procedure TfrmMain.actSaveExecute(Sender: TObject);
@@ -384,7 +390,7 @@ begin
   begin
     if (FOptimizedImageSize > 0) and (FOptimizedImageSize < FOriginalImageSize) then
     begin
-      ShellDeleteFile(FSourceFileName); // Remove original file to recycle bin
+      TACLRecycleBin.Delete(FSourceFileName); // Remove original file to recycle bin
       acCopyFile(FTempFileName, FSourceFileName, False);
     end;
     Close;
@@ -401,20 +407,22 @@ begin
   Close;
 end;
 
-procedure TfrmMain.btnSwitchViewMouseDown(Sender: TObject; Button: TMouseButton; Shift: TShiftState; X, Y: Integer);
+procedure TfrmMain.btnSwitchViewMouseDown(Sender: TObject;
+  Button: TMouseButton; Shift: TShiftState; X, Y: Integer);
 begin
   if Button = mbLeft then
     SetViewMode((Sender as TComponent).Tag);
 end;
 
-procedure TfrmMain.btnSwitchViewMouseUp(Sender: TObject; Button: TMouseButton; Shift: TShiftState; X, Y: Integer);
+procedure TfrmMain.btnSwitchViewMouseUp(Sender: TObject;
+  Button: TMouseButton; Shift: TShiftState; X, Y: Integer);
 begin
   SetViewMode(0);
 end;
 
 procedure TfrmMain.pbPreviewPaint(Sender: TObject);
 begin
-  GetImage(FViewMode).DrawBlend(pbPreview.Canvas.Handle, pbPreview.ClientRect, MaxByte, True);
+  GetImage(FViewMode).DrawBlend(pbPreview.Canvas, pbPreview.ClientRect, MaxByte, True);
 end;
 
 procedure TfrmMain.sbPreviewMouseWheel(Sender: TObject;
@@ -422,7 +430,8 @@ procedure TfrmMain.sbPreviewMouseWheel(Sender: TObject;
 begin
   Handled := ssCtrl in Shift;
   if Handled then
-    sePreviewZoom.Value := sePreviewZoom.Value + (WheelDelta div WHEEL_DELTA) * sePreviewZoom.OptionsValue.IncCount;
+    sePreviewZoom.Value := sePreviewZoom.Value +
+      (WheelDelta div WHEEL_DELTA) * sePreviewZoom.OptionsValue.IncCount;
 end;
 
 procedure TfrmMain.optChangeDelayTimerHandler(Sender: TObject);
